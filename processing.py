@@ -1,9 +1,8 @@
-from datetime import datetime
-
 from categories import CATEGORY_EMOJI
 from gemini_parser import parse_with_gemini
 from parser import try_strict_parse
 from sheets import append_row
+from tz import now as moscow_now
 
 TYPE_LABELS = {"income": "Доход", "expense": "Расход"}
 
@@ -20,7 +19,7 @@ def process_entry(text: str, user: dict, source: str) -> str:
     if entry is None:
         return NOT_UNDERSTOOD_MESSAGE
 
-    now = datetime.now().strftime("%Y-%m-%d %H:%M")
+    now = moscow_now().strftime("%Y-%m-%d %H:%M")
     row = [
         now,
         TYPE_LABELS[entry["type"]],

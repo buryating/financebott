@@ -1,12 +1,13 @@
 from datetime import datetime, timedelta
 
 from categories import CATEGORY_EMOJI
+from tz import now as moscow_now
 
 _DATE_FORMAT = "%Y-%m-%d %H:%M"
 
 
 def build_report(rows: list[dict], period: str) -> str:
-    now = datetime.now()
+    now = moscow_now()
     if period == "неделя":
         start = now - timedelta(days=7)
     else:
