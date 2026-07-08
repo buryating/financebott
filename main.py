@@ -26,7 +26,12 @@ async def main() -> None:
     await site.start()
     logger.info("Shortcut webhook listening on port %s", WEBHOOK_PORT)
 
-    await dp.start_polling(bot)
+    while True:
+        try:
+            await dp.start_polling(bot)
+        except Exception:
+            logger.exception("Polling crashed (вероятно, обрыв связи с Telegram), retry through 5s")
+            await asyncio.sleep(5)
 
 
 if __name__ == "__main__":
