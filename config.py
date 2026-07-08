@@ -8,6 +8,7 @@ load_dotenv()
 
 BOT_TOKEN = os.environ["BOT_TOKEN"]
 WEBHOOK_PORT = int(os.getenv("WEBHOOK_PORT", "8080"))
+PROXY_URL = os.getenv("PROXY_URL") or None
 
 GEMINI_API_KEY = os.environ["GEMINI_API_KEY"]
 GEMINI_MODEL = os.environ["GEMINI_MODEL"]
