@@ -89,4 +89,24 @@ aiogram polling и aiohttp.web подняты в одном asyncio event loop (
 
 ## Деплой
 
-Планируется тот же VPS, что у `student-bot`, через Docker. Для публичного HTTPS-доступа к `/add` (нужно шорткату) — Cloudflare Tunnel, чтобы не возиться с доменом/сертификатами. Детали — на этапе деплоя.
+Задеплоено на тот же VPS, что и `student-bot` (`178.208.94.102`, `root`), путь `/opt/finance-bot`, код через git (`github.com/buryating/financebott`, приватный).
+
+### PROXY_URL
+С этого VPS соединение до Telegram API нестабильно на уровне провайдера/страны (см. ниже). В `.env` задан `PROXY_URL` (HTTP-прокси, куплен готовым сервисом) — `main.py` подключает его через `AiohttpSession(proxy=...)`. Без него бот периодически недоступен по многу минут.
+
+### Cloudflare Tunnel
+Публичный HTTPS-доступ к `/add` (нужно шортката) — через `cloudflare/cloudflared` контейнер в `docker-compose.yml` (сервис `cloudflared`, quick tunnel без домена: `tunnel --url http://bot:8080`). Порт бота (8080) наружу через `ports:` больше не пробрасывается — снаружи виден только Cloudflare.
+
+Адрес вида `https://<случайное>.trycloudflare.com` появляется в логах контейнера при каждом запуске:
+```bash
+docker-compose logs cloudflared | grep trycloudflare
+```
+Без привязанного домена адрес **меняется при каждом пересоздании контейнера** cloudflared (не при обычном рестарте бота — только когда пересоздаётся сам `cloudflared`). Если шорткат перестал работать — сначала проверь, не сменился ли адрес.
+
+Данные сервера для ssh-connect/deploy лежат в `.env.deploy` (гитигнорится, не уезжает на сервер — там только root-пароль VPS, ему нечего делать внутри контейнера).
+
+### Обновление на сервере
+На сервере старый `docker-compose` v1.29.2 (не `docker compose` v2 — команда `docker compose` не существует, использовать дефис). Он падает с `KeyError: 'ContainerConfig'` при `docker-compose up -d --build` поверх существующего контейнера (баг совместимости v1.29 с новым Docker Engine). Обход: сначала `docker-compose down`, потом `docker-compose up -d --build`.
+
+### Нестабильная связь с Telegram с этого VPS
+С этого сервера соединение до `api.telegram.org` периодически рвётся (видно и у student-bot в логах — `ServerDisconnectedError` каждые 2-3 минуты, затем реконнект). aiogram сам ретраит обрывы внутри цикла polling, но самый первый вызов `bot.me()` при старте `dp.start_polling()` ничем не обёрнут — если сеть моргнула именно в этот момент, падает весь процесс. Поэтому в `main.py` `dp.start_polling(bot)` обёрнут в `while True: try/except` с ретраем через 5 секунд — без этого бот мог зависать в цикле падений/рестартов контейнера и не отвечать.

@@ -5,8 +5,13 @@ services:
     env_file: .env
     environment:
       - PYTHONUNBUFFERED=1
-    ports:
-      - "8080:8080"
     volumes:
       - ./credentials_diman.json:/app/credentials_diman.json:ro
       - ./credentials_partner.json:/app/credentials_partner.json:ro
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: always
+    command: tunnel --no-autoupdate --url http://bot:8080
+    depends_on:
+      - bot
