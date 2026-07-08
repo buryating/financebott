@@ -7,11 +7,12 @@ from google import genai
 from google.genai import types
 
 from categories import EXPENSE_CATEGORIES, INCOME_CATEGORIES
-from config import GEMINI_API_KEY, GEMINI_MODEL
+from config import GEMINI_API_KEY, GEMINI_MODEL, PROXY_URL
 
 logger = logging.getLogger(__name__)
 
-_client = genai.Client(api_key=GEMINI_API_KEY)
+_http_options = types.HttpOptions(client_args={"proxy": PROXY_URL}) if PROXY_URL else None
+_client = genai.Client(api_key=GEMINI_API_KEY, http_options=_http_options)
 
 _ALL_CATEGORIES = sorted(set(EXPENSE_CATEGORIES) | set(INCOME_CATEGORIES))
 
