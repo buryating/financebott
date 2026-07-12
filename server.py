@@ -22,7 +22,7 @@ async def handle_add(request: web.Request) -> web.Response:
     if not text:
         return web.json_response({"error": "empty text"}, status=400)
 
-    reply = process_entry(text, user, source="shortcut")
+    reply = process_entry(text, user)
     return web.json_response({"message": reply})
 
 

@@ -7,26 +7,25 @@ from tz import now as moscow_now
 TYPE_LABELS = {"income": "Доход", "expense": "Расход"}
 
 NOT_UNDERSTOOD_MESSAGE = (
-    "🤔 Не понял сообщение. Формат: <b>500 еда</b> или <b>+50000 зарплата</b>, "
+    "🤔 Не понял сообщение. Формат: <b>500 такси</b> или <b>+50000 оффлайн</b>, "
     "либо опиши обычным текстом."
 )
 
 
-def process_entry(text: str, user: dict, source: str) -> str:
+def process_entry(text: str, user: dict) -> str:
     entry = try_strict_parse(text)
     if entry is None:
         entry = parse_with_gemini(text)
     if entry is None:
         return NOT_UNDERSTOOD_MESSAGE
 
-    now = moscow_now().strftime("%Y-%m-%d %H:%M")
+    now = moscow_now().strftime("%d-%m-%y")
     row = [
         now,
         TYPE_LABELS[entry["type"]],
         entry["amount"],
         entry["category"],
         entry.get("description", ""),
-        source,
     ]
     append_row(user["credentials_path"], user["spreadsheet_id"], row)
 

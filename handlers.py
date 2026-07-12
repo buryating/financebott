@@ -26,7 +26,7 @@ async def cmd_start(message: Message) -> None:
         )
         return
     await message.answer(
-        "👋 Привет! Пиши траты/доходы текстом, например <b>500 еда</b> или <b>+50000 зарплата</b>.",
+        "👋 Привет! Пиши траты/доходы текстом, например <b>500 такси</b> или <b>+50000 оффлайн</b>.",
         reply_markup=main_keyboard(),
     )
 
@@ -64,5 +64,5 @@ async def handle_text(message: Message) -> None:
     if user is None:
         return
 
-    reply = process_entry(message.text, user, source="telegram")
+    reply = process_entry(message.text, user)
     await message.answer(reply)

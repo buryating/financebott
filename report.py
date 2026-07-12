@@ -3,15 +3,15 @@ from datetime import datetime, timedelta
 from categories import CATEGORY_EMOJI
 from tz import now as moscow_now
 
-_DATE_FORMAT = "%Y-%m-%d %H:%M"
+_DATE_FORMAT = "%d-%m-%y"
 
 
 def build_report(rows: list[dict], period: str) -> str:
-    now = moscow_now()
+    now = moscow_now().replace(hour=0, minute=0, second=0, microsecond=0)
     if period == "неделя":
         start = now - timedelta(days=7)
     else:
-        start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        start = now.replace(day=1)
 
     income_total = 0.0
     expense_total = 0.0
@@ -31,7 +31,7 @@ def build_report(rows: list[dict], period: str) -> str:
             income_total += amount
         else:
             expense_total += amount
-            category = row.get("Категория", "прочее")
+            category = row.get("Категория", "Прочее")
             by_category[category] = by_category.get(category, 0.0) + amount
 
     balance = income_total - expense_total

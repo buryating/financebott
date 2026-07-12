@@ -29,19 +29,34 @@ _SCHEMA = {
 
 _PROMPT = """Извлеки из сообщения о финансовой операции структурированные данные.
 
-type: "income" если это доход (зарплата, подработка, подарок), "expense" если расход.
+type: "income" (доход) или "expense" (расход).
+
 amount: сумма в рублях, число без знака.
-category: ближайшая подходящая категория из разрешённого списка.
-description: краткое описание своими словами.
+
+category: строго одна из категорий, подходящая по смыслу и по типу (type):
+- для expense: {expense_categories}
+- для income: {income_categories}
+
+Важные уточнения по категориям дохода:
+- "Оффлайн" — доход от обычной работы (окладная работа, смена, зарплата).
+- "Онлайн" — доход от заказов рефератов/лабораторных через student-bot или другую онлайн-подработку.
+- "Родственники" — деньги от родственников; если в сообщении названо имя — включи его в description.
+
+description: краткое описание своими словами (если упомянуто имя человека — сохрани его здесь).
 
 Сообщение: {text}"""
 
 
 def parse_with_gemini(text: str) -> dict | None:
     try:
+        prompt = _PROMPT.format(
+            text=text,
+            expense_categories=", ".join(EXPENSE_CATEGORIES),
+            income_categories=", ".join(INCOME_CATEGORIES),
+        )
         response = _client.models.generate_content(
             model=GEMINI_MODEL,
-            contents=_PROMPT.format(text=text),
+            contents=prompt,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
                 response_schema=_SCHEMA,
