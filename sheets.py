@@ -32,6 +32,7 @@ def _get_worksheet(credentials_path: str, spreadsheet_id: str) -> gspread.Worksh
             "textFormat": {"bold": True},
             "backgroundColor": _HEADER_BG,
         })
+        worksheet.format("A2:A1000", {"numberFormat": {"type": "TEXT"}})
         worksheet.format("C2:C1000", {"numberFormat": {"type": "CURRENCY", "pattern": "#,##0 ₽"}})
         worksheet.freeze(rows=1)
         _ensure_summary_sheet(spreadsheet)
@@ -91,4 +92,4 @@ def append_row(credentials_path: str, spreadsheet_id: str, row: list) -> None:
 
 def get_all_rows(credentials_path: str, spreadsheet_id: str) -> list[dict]:
     worksheet = _get_worksheet(credentials_path, spreadsheet_id)
-    return worksheet.get_all_records()
+    return worksheet.get_all_records(value_render_option="UNFORMATTED_VALUE")
